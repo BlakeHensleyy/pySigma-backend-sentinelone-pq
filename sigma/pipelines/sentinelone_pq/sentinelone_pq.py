@@ -1,5 +1,5 @@
 from sigma.processing.conditions import LogsourceCondition
-from sigma.processing.transformations import AddConditionTransformation, FieldMappingTransformation, DetectionItemFailureTransformation, RuleFailureTransformation, SetStateTransformation, ChangeLogsourceTransformation
+from sigma.processing.transformations import AddConditionTransformation, FieldMappingTransformation, DetectionItemFailureTransformation, RuleFailureTransformation, SetStateTransformation, ChangeLogsourceTransformation, DropDetectionItemTransformation
 from sigma.processing.conditions import LogsourceCondition, IncludeFieldCondition, ExcludeFieldCondition, RuleProcessingItemAppliedCondition
 from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline
 from sigma.rule import SigmaDetectionItem
@@ -42,6 +42,8 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "ParentProcessId":"src.process.pid",
             "ParentImage":"src.process.image.path",
             "ParentCommandLine":"src.process.cmdline",
+            "OriginalFileName":"osSrc.process.image.path",
+            "ParentUser":"src.process.parent.use"
         },
         'file':{
             "Image": "src.process.image.path",
@@ -223,6 +225,18 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="registry_set")
             ]
         ),
+        # Drop unsupported Hashes field, including Imphash
+         ProcessingItem(
+            identifier="s1_pq_process_creation_drop_unsupported_hashes",
+            transformation=DropDetectionItemTransformation(),
+            rule_conditions=[
+                LogsourceCondition(category="process_creation")
+            ],
+            field_name_conditions=[
+                IncludeFieldCondition(fields=["Hashes"]),
+                IncludeFieldCondition(fields=["Imphash"])
+            ],
+         ),
         # Add ObjectType for DNS Stuff
         ProcessingItem(
             identifier="s1_pq_dns_objecttype",
