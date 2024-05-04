@@ -43,7 +43,12 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "ParentImage":"src.process.image.path",
             "ParentCommandLine":"src.process.cmdline",
             "OriginalFileName":"osSrc.process.image.path",
-            "ParentUser":"src.process.parent.use"
+            "ParentUser":"src.process.parent.use",
+            "FileVersion":"src.process.image.productVersion",
+            "Hashes":"Hashes", #unsupported field
+            "Imphash":"Imphash", #unsupported field
+            "LogonId":"LogonId", #unsupported field
+            "Provider_Name":"winEventLog.providerName"
         },
         'file':{
             "Image": "src.process.image.path",
@@ -225,18 +230,6 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="registry_set")
             ]
         ),
-        # Drop unsupported Hashes field, including Imphash
-         ProcessingItem(
-            identifier="s1_pq_process_creation_drop_unsupported_hashes",
-            transformation=DropDetectionItemTransformation(),
-            rule_conditions=[
-                LogsourceCondition(category="process_creation")
-            ],
-            field_name_conditions=[
-                IncludeFieldCondition(fields=["Hashes"]),
-                IncludeFieldCondition(fields=["Imphash"])
-            ],
-         ),
         # Add ObjectType for DNS Stuff
         ProcessingItem(
             identifier="s1_pq_dns_objecttype",
@@ -270,6 +263,39 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="process_creation")
             ]
         ),
+         # Drop unsupported hashes field
+         ProcessingItem(
+            identifier="s1_pq_process_creation_drop_unsupported_hashes",
+            transformation=DropDetectionItemTransformation(),
+            rule_conditions=[
+                LogsourceCondition(category="process_creation")
+            ],
+            field_name_conditions=[
+                IncludeFieldCondition(fields=["Hashes"])
+            ],
+         ),
+         # Drop unsupported Imphash field
+         ProcessingItem(
+            identifier="s1_pq_process_creation_drop_unsupported_hashes",
+            transformation=DropDetectionItemTransformation(),
+            rule_conditions=[
+                LogsourceCondition(category="process_creation")
+            ],
+            field_name_conditions=[
+                IncludeFieldCondition(fields=["Imphash"])
+            ],
+         ),
+         # Drop unsupported LogonId field
+         ProcessingItem(
+            identifier="s1_pq_process_creation_drop_unsupported_LogonId",
+            transformation=DropDetectionItemTransformation(),
+            rule_conditions=[
+                LogsourceCondition(category="process_creation")
+            ],
+            field_name_conditions=[
+                IncludeFieldCondition(fields=["LogonId"])
+            ],
+         ),
         # File Stuff
         ProcessingItem(
             identifier="s1_pq_file_change_fieldmapping",
