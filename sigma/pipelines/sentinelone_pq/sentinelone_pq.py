@@ -27,7 +27,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         'process_creation':{
             "ProcessId":"tgt.process.pid",
             "Image":"tgt.process.image.path",
-            "Description":"tgt.process.displayName", #Not sure whether this should be Description or Product???
+            "Description":"tgt.process.displayName",    #Not sure whether this should be Description or Product???
             "Publisher": "tgt.process.publisher",
             "Product":"tgt.process.displayName",
             "Company":"tgt.process.publisher",
@@ -42,13 +42,13 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "ParentProcessId":"src.process.pid",
             "ParentImage":"src.process.image.path",
             "ParentCommandLine":"src.process.cmdline",
-            "OriginalFileName":"osSrc.process.image.path",
+            "OriginalFileName":"osSrc.process.name", # Not sure how to map this <--
             "ParentUser":"src.process.parent.use",
             "FileVersion":"src.process.image.productVersion",
-            "Hashes":"Hashes", #unsupported field
-            "Imphash":"Imphash", #unsupported field
-            "LogonId":"LogonId", #unsupported field
-            "Provider_Name":"winEventLog.providerName"
+            "Provider_Name":"winEventLog.providerName",
+            "Hashes":"Hashes",                          #unsupported field, being dropped
+            "Imphash":"Imphash",                        #unsupported field, being dropped
+            "LogonId":"LogonId"                         #unsupported field, being dropped 
         },
         'file':{
             "Image": "src.process.image.path",
