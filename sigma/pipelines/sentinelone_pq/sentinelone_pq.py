@@ -111,7 +111,9 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "src_port":"src.port.number"
         },
         'ps_script':{
-            "ScriptBlockText":"cmdScript.content"
+            "ScriptBlockText":"cmdScript.content",
+            "Path":"cmdline",
+            "Data":"src.process.cmdline"
         }
 
     }
@@ -159,7 +161,10 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 "event.type": 'Command Script'
             }),
             rule_conditions=[
-                LogsourceCondition(category="ps_script")
+                LogsourceCondition(category="ps_script"),
+                LogsourceCondition(category="ps_classic_start"),
+                LogsourceCondition(category="ps_classic_provider_start"),
+                LogsourceCondition(service="powershell-classic")
             ]
         ),
         
@@ -352,6 +357,18 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="registry_set")
             ]
         ),
+        # Powershell stuff
+        ProcessingItem(
+            identifier="s1_pq_command_script_fieldmapping",
+            transformation=FieldMappingTransformation(translation_dict['ps_script']),
+            rule_condition_linking=any,
+            rule_conditions=[
+                LogsourceCondition(category="ps_script"),
+                LogsourceCondition(category="ps_classic_start"),
+                LogsourceCondition(category="ps_classic_provider_start"),
+                LogsourceCondition(service="powershell-classic")
+            ]
+        ),
         # DNS Stuff
         ProcessingItem(
             identifier="s1_pq_dns_fieldmapping",
@@ -397,7 +414,11 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="dns"),
                 LogsourceCondition(category="dns_query"),
                 LogsourceCondition(category="network_connection"),
-                LogsourceCondition(category="firewall")
+                LogsourceCondition(category="firewall"),
+                LogsourceCondition(category="ps_script"),
+                LogsourceCondition(category="ps_classic_start"),
+                LogsourceCondition(category="ps_classic_provider_start"),
+                LogsourceCondition(service="powershell-classic")
             ]
         ),
     ]
