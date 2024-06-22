@@ -27,7 +27,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         'process_creation':{
             "ProcessId":"tgt.process.pid",
             "Image":"tgt.process.image.path",
-            "Description":"tgt.process.displayName",    #Not sure whether this should be Description or Product???
+            "Description":"tgt.process.displayName",
             "Publisher": "tgt.process.publisher",
             "Product":"tgt.process.displayName",
             "Company":"tgt.process.publisher",
@@ -42,7 +42,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "ParentProcessId":"src.process.pid",
             "ParentImage":"src.process.image.path",
             "ParentCommandLine":"src.process.cmdline",
-            "OriginalFileName":"osSrc.process.name", # Not sure how to map this <--
+            "OriginalFileName":"osSrc.process.name",    # Not sure how to map this <--
             "ParentUser":"src.process.parent.use",
             "FileVersion":"src.process.image.productVersion",
             "Provider_Name":"winEventLog.providerName",
@@ -109,9 +109,14 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "src_ip":"src.ip.address",
             "dst_port":"dst.port.number",
             "src_port":"src.port.number"
+        },
+        'ps_script':{
+            "ScriptBlockText":"cmdScript.content"
         }
+
     }
 
+### OS FILTER SECTION ###
     os_filter = [
         # Add EndpointOS = Linux
         ProcessingItem(
@@ -144,8 +149,20 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             ]
         )
     ]
-
+### EVENT TYPE FILTER SECTION ###
+    
     object_event_type_filter = [
+        # Add ObjectType for Powershell Stuff
+        ProcessingItem(
+            identifier="s1_pq_command_script_eventtype",
+            transformation=AddConditionTransformation({
+                "event.type": 'Command Script'
+            }),
+            rule_conditions=[
+                LogsourceCondition(category="ps_script")
+            ]
+        ),
+        
         # Add EventType = Process Creation
         ProcessingItem(
             identifier="s1_pq_process_creation_eventtype",
@@ -253,7 +270,6 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             ]
         )
     ]
-
     field_mappings = [
         # Process Creation
         ProcessingItem(
