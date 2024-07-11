@@ -42,7 +42,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "ParentProcessId":"src.process.pid",
             "ParentImage":"src.process.image.path",
             "ParentCommandLine":"src.process.cmdline",
-            "OriginalFileName":"osSrc.process.name",    # Not sure how to map this <--
+            "OriginalFileName":"src.process.name",
             "ParentUser":"src.process.parent.use",
             "FileVersion":"src.process.image.productVersion",
             "Provider_Name":"winEventLog.providerName",
@@ -242,7 +242,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         ProcessingItem(
             identifier="s1_pq_registry_eventtype",
             transformation=AddConditionTransformation({
-                "event.category": "Registry"
+                "event.category": "registry"
             }),
             rule_condition_linking=any,
             rule_conditions=[
@@ -256,7 +256,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         ProcessingItem(
             identifier="s1_pq_dns_objecttype",
             transformation=AddConditionTransformation({
-                "event.category":"DNS"
+                "event.category":"dns"
             }),
             rule_condition_linking=any,
             rule_conditions=[
@@ -268,7 +268,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         ProcessingItem(
             identifier="s1_pq_network_objecttype",
             transformation=AddConditionTransformation({
-                "event.category": ["DNS","Url","IP"]
+                "event.category": ["dns","url","ip"]
             }),
             rule_conditions=[
                 LogsourceCondition(category="network_connection")
