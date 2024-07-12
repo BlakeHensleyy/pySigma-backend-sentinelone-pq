@@ -68,7 +68,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "sha1":"module.sha1",
             "md5": "module.md5"
         },
-        'pipe_creation':{
+        'pipe_created':{
             "PipeName":"namedPipe.name",
             "Image": "src.process.image.path",
             "CommandLine":"src.process.cmdline",
@@ -230,12 +230,12 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         ),
         # Add EventType for Pipe Creation
         ProcessingItem(
-            identifier="s1_pq_pipe_creation_eventtype",
+            identifier="s1_pq_pipe_created_eventtype",
             transformation=AddConditionTransformation({
                 "event.type": "Named Pipe Creation"
             }),
             rule_conditions=[
-                LogsourceCondition(category="pipe_creation")
+                LogsourceCondition(category="pipe_created")
             ]
         ),
         # Add ObjectType for Registry Stuff
@@ -339,10 +339,10 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
         ),
         # Pipe Creation Stuff
         ProcessingItem(
-            identifier="s1_pq_pipe_creation_fieldmapping",
-            transformation=FieldMappingTransformation(translation_dict['pipe_creation']),
+            identifier="s1_pq_pipe_created_fieldmapping",
+            transformation=FieldMappingTransformation(translation_dict['pipe_created']),
             rule_conditions=[
-                LogsourceCondition(category="pipe_creation")
+                LogsourceCondition(category="pipe_created")
             ]
         ),
         # Registry Stuff
@@ -406,7 +406,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="file_delete"),
                 LogsourceCondition(category="file_event"),
                 LogsourceCondition(category="image_load"),
-                LogsourceCondition(category="pipe_creation"),
+                LogsourceCondition(category="pipe_created"),
                 LogsourceCondition(category="registry_add"),
                 LogsourceCondition(category="registry_delete"),
                 LogsourceCondition(category="registry_event"),
