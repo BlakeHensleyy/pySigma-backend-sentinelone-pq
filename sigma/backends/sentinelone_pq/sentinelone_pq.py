@@ -33,12 +33,12 @@ class SentinelOnePQBackend(TextQueryBackend):
     eq_token : ClassVar[str] = "="
 
     field_quote : ClassVar[str] = "'"
-    field_quote_pattern : ClassVar[Pattern] = re.compile("^\\w\.+$")
+    field_quote_pattern : ClassVar[Pattern] = re.compile(r"^\\w\.+$")
     field_quote_pattern_negation : ClassVar[bool] = False
 
     field_escape : ClassVar[str] = "\\"
     field_escape_quote : ClassVar[bool] = True
-    field_escape_pattern : ClassVar[Pattern] = re.compile("\\s")
+    field_escape_pattern : ClassVar[Pattern] = re.compile(r"\\s")
 
     str_quote       : ClassVar[str] = '"'
     escape_char     : ClassVar[str] = "\\"
