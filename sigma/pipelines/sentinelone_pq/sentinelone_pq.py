@@ -285,41 +285,42 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="process_creation")
             ]
         ),
-         # Drop unsupported hashes field
-         ProcessingItem(
-            identifier="s1_pq_process_creation_drop_unsupported_hashes",
-            transformation=DropDetectionItemTransformation(),
-            rule_conditions=[
-                LogsourceCondition(category="process_creation")
-            ],
-            field_name_conditions=[
-                IncludeFieldCondition(fields=["Hashes"])
-            ],
-         ),
-         # Drop unsupported Imphash field
-         ProcessingItem(
-            identifier="s1_pq_process_creation_drop_unsupported_hashes",
-            transformation=DropDetectionItemTransformation(),
-            rule_conditions=[
-                LogsourceCondition(category="process_creation")
-            ],
-            field_name_conditions=[
-                IncludeFieldCondition(fields=["Imphash"])
-            ],
-         ),
-         # Drop unsupported LogonId field
-         ProcessingItem(
-            identifier="s1_pq_process_creation_drop_unsupported_LogonId",
-            transformation=DropDetectionItemTransformation(),
-            rule_conditions=[
-                LogsourceCondition(category="process_creation")
-            ],
-            field_name_conditions=[
-                IncludeFieldCondition(fields=["LogonId"])
-            ],
-         ),
-         # Drop unsupported EventType field when category: registry. EventType is also included in a few rules as DeleteKey etc, which is not supported.
-         ProcessingItem(
+        # Drop unsupported hashes field
+        ProcessingItem(
+           identifier="s1_pq_process_creation_drop_unsupported_hashes",
+           transformation=DropDetectionItemTransformation(),
+           rule_conditions=[
+               LogsourceCondition(category="process_creation")
+           ],
+           field_name_conditions=[
+               IncludeFieldCondition(fields=["Hashes"])
+           ],
+        ),
+        # Drop unsupported Imphash field
+        ProcessingItem(
+           identifier="s1_pq_process_creation_drop_unsupported_hashes",
+           transformation=DropDetectionItemTransformation(),
+           rule_conditions=[
+               LogsourceCondition(category="process_creation")
+           ],
+           field_name_conditions=[
+               IncludeFieldCondition(fields=["Imphash"])
+           ],
+        ),
+        # Drop unsupported LogonId field
+        ProcessingItem(
+           identifier="s1_pq_process_creation_drop_unsupported_LogonId",
+           transformation=DropDetectionItemTransformation(),
+           rule_conditions=[
+               LogsourceCondition(category="process_creation")
+           ],
+           field_name_conditions=[
+               IncludeFieldCondition(fields=["LogonId"])
+           ],
+        ),
+        # Drop unsupported EventType field when category: registry.
+        # EventType is also included in a few rules as DeleteKey etc, which is not supported.
+        ProcessingItem(
             identifier="s1_pq_process_creation_drop_unsupported_EventType",
             transformation=DropDetectionItemTransformation(),
             rule_conditions=[
@@ -331,7 +332,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             field_name_conditions=[
                 IncludeFieldCondition(fields=["EventType"])
             ],
-         ),
+        ),
         # File Stuff
         ProcessingItem(
             identifier="s1_pq_file_change_fieldmapping",
