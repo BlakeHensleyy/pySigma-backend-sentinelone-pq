@@ -105,6 +105,7 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             "SourceIp":"src.ip.address",
             "SourcePort":"src.port.number",
             "Protocol":"NetProtocolName",
+            "Initiated": "event.network.connectionStatus",
             "dst_ip":"dst.ip.address",
             "src_ip":"src.ip.address",
             "dst_port":"dst.port.number",
@@ -315,6 +316,20 @@ def sentinelonepq_pipeline() -> ProcessingPipeline:
             ],
             field_name_conditions=[
                 IncludeFieldCondition(fields=["LogonId"])
+            ],
+         ),
+         # Drop unsupported EventType field when category: registry. EventType is also included in a few rules as DeleteKey etc, which is not supported.
+         ProcessingItem(
+            identifier="s1_pq_process_creation_drop_unsupported_EventType",
+            transformation=DropDetectionItemTransformation(),
+            rule_conditions=[
+                LogsourceCondition(category="registry_add"),
+                LogsourceCondition(category="registry_delete"),
+                LogsourceCondition(category="registry_event"),
+                LogsourceCondition(category="registry_set")
+            ],
+            field_name_conditions=[
+                IncludeFieldCondition(fields=["EventType"])
             ],
          ),
         # File Stuff
