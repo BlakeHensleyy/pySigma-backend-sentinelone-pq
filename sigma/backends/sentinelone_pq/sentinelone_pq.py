@@ -109,7 +109,7 @@ class SentinelOnePQBackend(TextQueryBackend):
         return queries
 
     def finalize_query_json(self, rule: SigmaRule, query: str, index: int, state:ConversionState) -> dict:
-        query += ' | columns ' + ",".join(rule.fields) if rule.fields else ''
+        #query += ' | columns ' + ",".join(rule.fields) if rule.fields else '' Columns usually only cause errors for the s1 query and can be added afterwards for individual searches.
         return {"query":query, "title":rule.title, "id":rule.id, "description": rule.description}
     
     def finalize_output_json(self, queries: List[str]) -> dict:
