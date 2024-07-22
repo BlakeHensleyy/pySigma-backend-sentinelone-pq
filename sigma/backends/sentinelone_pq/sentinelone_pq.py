@@ -90,12 +90,11 @@ class SentinelOnePQBackend(TextQueryBackend):
     unbound_value_num_expression: ClassVar[str] = '"{value}"'
 
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
-        # Handle NOT conditions correctly
-        if isinstance(rule.detection.condition, ConditionNOT):
-            condition_str = f"{self.not_token} ({self.convert(rule.detection.condition.subcondition, state)})"
-        else:
+        if isinstance(rule.detection.condition, str):
             condition_str = self.convert(rule.detection.condition, state)
-        
+        else:
+            condition_str = self.build_condition(rule.detection.condition)
+
         query += condition_str
 
         if rule.fields:
