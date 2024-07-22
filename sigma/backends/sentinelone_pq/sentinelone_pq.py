@@ -32,12 +32,12 @@ class SentinelOnePQBackend(TextQueryBackend):
     eq_token: ClassVar[str] = "="
 
     field_quote: ClassVar[str] = "'"
-    field_quote_pattern: ClassVar[Pattern] = re.compile(r"^\w\.+$")
+    field_quote_pattern: ClassVar[Pattern] = re.compile(r"^\\w\.+$")
     field_quote_pattern_negation: ClassVar[bool] = False
 
     field_escape: ClassVar[str] = "\\"
     field_escape_quote: ClassVar[bool] = True
-    field_escape_pattern: ClassVar[Pattern] = re.compile(r"\s")
+    field_escape_pattern: ClassVar[Pattern] = re.compile(r"\\s")
 
     str_quote: ClassVar[str] = '"'
     escape_char: ClassVar[str] = "\\"
@@ -74,7 +74,6 @@ class SentinelOnePQBackend(TextQueryBackend):
     }
 
     field_null_expression: ClassVar[str] = 'not ({field} matches "\\.*")'
-
     field_exists_expression: ClassVar[str] = '{field} matches "\\.*"'
     field_not_exists_expression: ClassVar[str] = 'not ({field} matches "\\.*")'
 
@@ -88,49 +87,24 @@ class SentinelOnePQBackend(TextQueryBackend):
     unbound_value_str_expression: ClassVar[str] = '"{value}"'
     unbound_value_num_expression: ClassVar[str] = '"{value}"'
 
+    def build_condition(self, cond: ConditionItem, state: ConversionState) -> str:
+        if isinstance(cond, ConditionNOT):
+            if isinstance(cond.operand, (ConditionAND, ConditionOR)):
+                return f"{self.not_token} ({self.build_condition(cond.operand, state)})"
+            else:
+                return f"{self.not_token} {self.build_condition(cond.operand, state)}"
+        return super().build_condition(cond, state)
+
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
-        if isinstance(rule.detection.condition, str):
-            condition_str = self.convert(rule.detection.condition, state)
-        else:
-            condition_str = self.build_condition(rule.detection.condition)
-
-        query += condition_str
-
-        if rule.fields:
-            query += ' | columns ' + ",".join(rule.fields)
-        
+        query += ' | columns ' + ",".join(rule.fields) if rule.fields else ''
         return query
 
     def finalize_output_default(self, queries: List[str]) -> str:
         return queries
 
     def finalize_query_json(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> dict:
+        query += ' | columns ' + ",".join(rule.fields) if rule.fields else ''
         return {"query": query, "title": rule.title, "id": rule.id, "description": rule.description}
 
     def finalize_output_json(self, queries: List[str]) -> dict:
         return {"queries": queries}
-
-    def build_condition(self, cond: Union[ConditionItem, List[ConditionItem]]) -> str:
-        if isinstance(cond, list):
-            if len(cond) == 1:
-                return self.build_condition(cond[0])
-            else:
-                return f"({self.token_separator.join(self.build_condition(subcond) for subcond in cond)})"
-        elif isinstance(cond, ConditionNOT):
-            return f"{self.not_token} ({self.build_condition(cond.subcondition)})"
-        elif isinstance(cond, ConditionAND):
-            return f" {self.and_token} ".join(self.build_condition(subcond) for subcond in cond.subconditions)
-        elif isinstance(cond, ConditionOR):
-            return f" {self.or_token} ".join(self.build_condition(subcond) for subcond in cond.subconditions)
-        elif isinstance(cond, ConditionFieldEqualsValueExpression):
-            return self.compare_op_expression.format(field=cond.field, operator=self.eq_token, value=self.escape_value(cond.value))
-        else:
-            raise NotImplementedError(f"Unknown condition type {type(cond)}")
-
-    def escape_value(self, value: Any) -> str:
-        if isinstance(value, SigmaString):
-            return f"{self.str_quote}{self.escape_char.join(value)}{self.str_quote}"
-        elif isinstance(value, SigmaRegularExpression):
-            return f"{self.re_expression.format(field=value.field, regex=self.escape_char.join(value.regex))}"
-        else:
-            return str(value)
