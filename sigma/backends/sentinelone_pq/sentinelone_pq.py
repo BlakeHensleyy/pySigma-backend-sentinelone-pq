@@ -2,11 +2,10 @@ from sigma.conversion.state import ConversionState
 from sigma.rule import SigmaRule
 from sigma.processing.pipeline import ProcessingPipeline
 from sigma.conversion.base import TextQueryBackend
-from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT, ConditionFieldEqualsValueExpression
-from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaString
+from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT
 from sigma.pipelines.sentinelone_pq import sentinelonepq_pipeline
 import re
-from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Union
+from typing import ClassVar, Dict, Tuple, Pattern, List, Any
 
 class SentinelOnePQBackend(TextQueryBackend):
     """SentinelOne PowerQuery backend."""
@@ -66,11 +65,11 @@ class SentinelOnePQBackend(TextQueryBackend):
     case_sensitive_contains_expression: ClassVar[str] = "{field} contains:matchcase {value}"
 
     compare_op_expression: ClassVar[str] = "{field} {operator} {value}"
-    compare_operators: ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {
-        SigmaCompareExpression.CompareOperators.LT: "<",
-        SigmaCompareExpression.CompareOperators.LTE: "<=",
-        SigmaCompareExpression.CompareOperators.GT: ">",
-        SigmaCompareExpression.CompareOperators.GTE: ">=",
+    compare_operators: ClassVar[Dict[str, str]] = {
+        "LT": "<",
+        "LTE": "<=",
+        "GT": ">",
+        "GTE": ">=",
     }
 
     field_null_expression: ClassVar[str] = 'not ({field} matches "\\.*")'
@@ -90,10 +89,18 @@ class SentinelOnePQBackend(TextQueryBackend):
     def build_condition(self, cond: ConditionItem, state: ConversionState) -> str:
         if isinstance(cond, ConditionNOT):
             if isinstance(cond.operand, (ConditionAND, ConditionOR)):
-                return f"{self.not_token} ({self.build_condition(cond.operand, state)})"
+                # Wrap operand in parentheses and place not outside
+                return f"{self.not_token}({self.build_condition(cond.operand, state)})"
             else:
+                # Directly apply not to the operand
                 return f"{self.not_token} {self.build_condition(cond.operand, state)}"
-        return super().build_condition(cond, state)
+        elif isinstance(cond, ConditionAND):
+            return f"({self.build_condition(cond.left, state)} {self.and_token} {self.build_condition(cond.right, state)})"
+        elif isinstance(cond, ConditionOR):
+            return f"({self.build_condition(cond.left, state)} {self.or_token} {self.build_condition(cond.right, state)})"
+        else:
+            # Handle other conditions (assuming default behavior)
+            return super().build_condition(cond, state)
 
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
         query += ' | columns ' + ",".join(rule.fields) if rule.fields else ''
