@@ -5,7 +5,6 @@ from sigma.conversion.base import TextQueryBackend
 from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT, ConditionFieldEqualsValueExpression
 from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaString
 from sigma.pipelines.sentinelone_pq import sentinelonepq_pipeline
-from sigma.conversion.deferred import DeferredQueryExpression
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Union
 
@@ -111,8 +110,13 @@ class SentinelOnePQBackend(TextQueryBackend):
     def finalize_output_json(self, queries: List[str]) -> dict:
         return {"queries": queries}
 
-    def build_condition(self, cond: ConditionItem) -> str:
-        if isinstance(cond, ConditionNOT):
+    def build_condition(self, cond: Union[ConditionItem, List[ConditionItem]]) -> str:
+        if isinstance(cond, list):
+            if len(cond) == 1:
+                return self.build_condition(cond[0])
+            else:
+                return f"({self.token_separator.join(self.build_condition(subcond) for subcond in cond)})"
+        elif isinstance(cond, ConditionNOT):
             return f"{self.not_token} ({self.build_condition(cond.subcondition)})"
         elif isinstance(cond, ConditionAND):
             return f" {self.and_token} ".join(self.build_condition(subcond) for subcond in cond.subconditions)
