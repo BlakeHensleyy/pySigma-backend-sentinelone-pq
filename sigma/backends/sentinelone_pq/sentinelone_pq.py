@@ -94,8 +94,16 @@ class SentinelOnePQBackend(TextQueryBackend):
     unbound_value_num_expression : ClassVar[str] = '"{value}"'
 
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
-        query += ' | columns ' + ",".join(rule.fields) if rule.fields else ''
-        return query
+        conditions = [] # Fix the issue of `not` being translated inside parenthesis
+        for condition in rule.detection.selection:
+            if isinstance(condition, ConditionNOT):
+                conditions.append(f"({self.convert(condition.expression, state)})")
+            else:
+                conditions.append(self.convert(condition, state))
+            query += f" and ".join(conditions)
+
+            query += ' | columns ' + ",".join(rule.fields) if rule.fields else ''
+            return query
 
     def finalize_output_default(self, queries: List[str]) -> str:
         return queries
